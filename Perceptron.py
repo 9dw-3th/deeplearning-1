@@ -2,17 +2,26 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class Perceptron:
-    #教師データを保存
+###--------------------------------------------------------------------------###
+###・インスタンス生成時の初期化
+###・教師データを保存
+###--------------------------------------------------------------------------###
     def __init__(self, correctSet):
         self.correctSet = correctSet
 
-    #パラメータをセットする
-    #拡張特徴ベクトル
+###--------------------------------------------------------------------------###
+###・テスト前に行う処理
+###・パラメータをセットする
+###・拡張特徴ベクトル
+###--------------------------------------------------------------------------###
     def setParameter(self, w):
         self.w = w
-
-    #単層パーセプトロン
-    def singlePerseptron(self, xi):
+###--------------------------------------------------------------------------###
+###・各ニューロンの発火時の処理（重み付け和）
+###・モデルの出力値を訓練標本ごとにリストに保存
+###・
+###--------------------------------------------------------------------------###
+    def getClasslabel(self, xi):
         #重み付け和計算
         tmp = np.sum(self.w * xi)
 
@@ -22,21 +31,31 @@ class Perceptron:
         else:
             return 1
 
-    def Compute(self, trainingSet):
+    def getClasslabelVec(self, trainingSet):
         Y = []
         for xi in range(len(trainingSet)):
-            y = self.singlePerseptron(trainingSet[xi])
+            y = self.getClasslabel(trainingSet[xi])
             Y.append(y)
         return Y
-
+###--------------------------------------------------------------------------###
+###・テスト
+###・教師データとモデル出力値の比較
+###・
+###--------------------------------------------------------------------------###
     def Test(self, trainingSet):
-        y = self.Compute(trainingSet)
+        #モデル出力値
+        y = self.getClasslabelVec(trainingSet)
         for xi in range(len(y)):
+            #教師データとモデル出力値の比較
             if self.correctSet[xi] != y[xi]:
                 print("パラメータを再設定してください！")
             else:
                 print(str(trainingSet[xi]) + " -> " + str(y[xi]))
-
+###--------------------------------------------------------------------------###
+###・描画処理、matplotlib
+###・訓練セットと正解セットを基に描画
+###・連続曲線（分類境界）を引くための準備
+###--------------------------------------------------------------------------###
     def plot(self):
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
@@ -68,8 +87,12 @@ class Perceptron:
         #plt.savefig('result.png')
         plt.show()
 
+###--------------------------------------------------------------------------###
+###・インスタンス生成
+###--------------------------------------------------------------------------###
 ##############################訓練セット : X = (x0, x1, x2)######################
 trainingSet = np.array([(1, 0, 0), (1, 1, 0), (1, 0, 1), (1, 1, 1)])
+
 correctSet_AND = np.array([0, 0, 0, 1])
 correctSet_OR = np.array([0, 1, 1, 1])
 correctSet_NAND = np.array([1, 1, 1, 0])
@@ -89,18 +112,22 @@ parameterSet_NAND = np.array([1.5, -1.0, -1.0]) #np.array([0.7, -0.5, -0.5])
 classifier_AND.setParameter(parameterSet_AND)
 classifier_OR.setParameter(parameterSet_OR)
 classifier_NAND.setParameter(parameterSet_NAND)
-
 classifier_XOR.setParameter(parameterSet_AND)
-##############################テスト#############################################
-###############単層パーセプトロン
-classifier_AND.Test(trainingSet)
-classifier_OR.Test(trainingSet)
-classifier_NAND.Test(trainingSet)
-classifier_XOR.Test(trainingSet)
+##############################テスト(単層パーセプトロン)###########################
+#classifier_AND.Test(trainingSet)
+#classifier_OR.Test(trainingSet)
+#classifier_NAND.Test(trainingSet)
+##############################曲線描画(単層パーセプトロン)##########################
+#classifier_AND.plot()
+#classifier_OR.plot()
+#classifier_NAND.plot()
+##############################テスト（多層パーセプトロン）###########################
+s1 = classifier_NAND.getClasslabelVec(trainingSet)
+s2 = classifier_OR.getClasslabelVec(trainingSet)
 
-##############################曲線描画###########################################
-###############単層パーセプトロン
-classifier_AND.plot()
-classifier_OR.plot()
-classifier_NAND.plot()
-classifier_XOR.plot()
+S = np.ones((4,3))
+for i in range(len(S)):
+    S[i][1] = s1[i]
+    S[i][2] = s2[i]
+
+classifier_XOR.Test(S)
